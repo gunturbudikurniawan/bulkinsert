@@ -1,29 +1,32 @@
 package main
 
 import (
-	"fmt"
-	"log"
+	"bpjs/app"
+	"bpjs/controller"
+	"bpjs/helper"
+	"bpjs/middleware"
+	"bpjs/repository"
+	"bpjs/service"
+	"net/http"
 
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
+	"github.com/go-playground/validator/v10"
+	_ "github.com/go-sql-driver/mysql"
 )
 
-type Orders struct {
-	gorm.Model
-	ID        int
-	Customer  string
-	Quantity  int
-	Price     int
-	Timestamp string
-}
-
 func main() {
-	dsn := "root:root@tcp(localhost:3309)/bpjs?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
-	if err != nil {
-		log.Fatal(err.Error())
+	db := app.NewDB()
+	validate := validator.New()
+	orderRepository := repository.NewCategoryRepository()
+	orderService := service.NewCategoryService(orderRepository, db, validate)
+	orderController := controller.NewCategoryController(orderService)
+	router := app.NewRouter(orderController)
+
+	server := http.Server{
+		Addr:    "localhost:4000",
+		Handler: middleware.NewAuthMiddleware(router),
 	}
-	fmt.Println("Connection to database is good")
-	db.AutoMigrate(&Orders{})
+
+	err := server.ListenAndServe()
+	helper.PanicIfError(err)
 }

@@ -56,3 +56,20 @@ docker-compose -f adminerCore.yml up
 
 if you have existing
 docker container start mysqlCore
+
+for testing
+curl --location --request POST 'http://localhost:4000/api/orders' \
+--header 'content-type: application/json' \
+--header 'X-API-Key: RAHASIA' \
+--data-raw '[
+{
+"customer":"guntur",
+"quantity":10,
+"price":10.20
+},
+{
+"customer":"guntur",
+"quantity":10,
+"price":10.20
+}
+]'
